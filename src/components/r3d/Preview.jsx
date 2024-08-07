@@ -1,20 +1,40 @@
 import React from "react";
-import "./Preview.css";
+import { Box, Typography, Card, CardMedia, CardContent } from "@mui/material";
 
 const Preview = ({ capturedImage }) => {
   return (
-    <div className="preview-container">
-      <h1 className="preview-title">Captured Image</h1>
-      {capturedImage ? (
-        <img
-          src={capturedImage}
-          alt="Captured Preview"
-          className="preview-image"
-        />
-      ) : (
-        <p className="no-preview">No Preview Available</p>
-      )}
-    </div>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        p: 2,
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        maxWidth: 400,
+        mx: "auto",
+      }}
+    >
+      <Typography variant="h5" component="h1" gutterBottom>
+        Captured Image
+      </Typography>
+      <Card sx={{ width: "100%", boxShadow: 3 }}>
+        {capturedImage ? (
+          <CardMedia
+            component="img"
+            image={capturedImage}
+            alt="Captured Preview"
+            sx={{ height: 300, objectFit: "contain" }}
+          />
+        ) : (
+          <CardContent>
+            <Typography variant="body1" color="text.secondary">
+              No Preview Available
+            </Typography>
+          </CardContent>
+        )}
+      </Card>
+    </Box>
   );
 };
 
