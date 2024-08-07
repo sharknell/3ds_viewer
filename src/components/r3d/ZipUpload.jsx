@@ -1,14 +1,13 @@
-// FileUpload.jsx
+// ZipUpload.jsx
 import React, { forwardRef } from "react";
-import { MdFileUpload } from "react-icons/md";
-import "./FileUpload.css";
+import { MdArchive } from "react-icons/md";
+import "./ZipUpload.css";
 
-const ACCEPTED_FILE_TYPES =
-  ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb";
+const ACCEPTED_FILE_TYPES = ".zip";
 
-const FileUpload = forwardRef(
+const ZipUpload = forwardRef(
   ({ onFileChange, onDrop, handleUploadClick }, ref) => (
-    <div className="file-upload">
+    <div className="zip-upload">
       <input
         type="file"
         onChange={onFileChange}
@@ -25,11 +24,11 @@ const FileUpload = forwardRef(
         onDragLeave={(e) => e.preventDefault()}
       >
         <div className="upload-button" onClick={handleUploadClick}>
-          <MdFileUpload size={12} />
+          <MdArchive size={12} />
         </div>
       </div>
     </div>
   )
 );
 
-export default FileUpload;
+export default ZipUpload;

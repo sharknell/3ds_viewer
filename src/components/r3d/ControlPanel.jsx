@@ -1,8 +1,9 @@
-// ControlPanel.js
 import React, { useState, useRef, useEffect } from "react";
 import "./ControlPanel.css";
 import LightingControlPanel from "./LightingControlPanel";
-import FileUpload from "./FileUpload"; // FileUpload 컴포넌트 import
+import FileUpload from "./FileUpload";
+import FolderUpload from "./FolderUpload";
+import ZipUpload from "./ZipUpload"; // Import ZipUpload component
 
 const ACCEPTED_FILE_TYPES =
   ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb";
@@ -13,8 +14,6 @@ const FileGroupList = ({
   selectedGroupIndex,
   handleGroupClick,
   deleteGroup,
-  handlePrev,
-  handleNext,
 }) => (
   <div className="file-list-container">
     <div className="file-list">
@@ -55,17 +54,6 @@ const FileGroupList = ({
         </ul>
       )}
     </div>
-    <div className="navigation-buttons">
-      <button onClick={handlePrev} disabled={selectedGroupIndex === 0}>
-        PREV
-      </button>
-      <button
-        onClick={handleNext}
-        disabled={selectedGroupIndex === fileGroups.length - 1}
-      >
-        NEXT
-      </button>
-    </div>
   </div>
 );
 
@@ -77,41 +65,48 @@ const ControlPanel = ({
   pointIntensity,
   setPointIntensity,
   handleCapture,
+  backgroundColor, // backgroundColor prop 추가
+  setBackgroundColor, // setBackgroundColor prop 추가
 }) => {
   const [fileGroups, setFileGroups] = useState([]);
   const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
   const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
+  const zipInputRef = useRef(null);
 
-  const updateFiles = (newFiles) => {
-    const newFileGroup = newFiles.map((file) => ({
-      file,
-      url: URL.createObjectURL(file),
-    }));
-    setFileGroups((prevGroups) => [...prevGroups, newFileGroup]);
-  };
+  const updateFiles = (files) => {
+    const newGroups = {};
 
-  const deleteGroup = (groupIndex) => {
-    setFileGroups((prevGroups) => {
-      const updatedGroups = [...prevGroups];
-      updatedGroups.splice(groupIndex, 1);
-      return updatedGroups;
+    Array.from(files).forEach((file) => {
+      const pathParts = file.webkitRelativePath
+        ? file.webkitRelativePath.split("/")
+        : [];
+      const folderName = pathParts.length > 1 ? pathParts[0] : "Ungrouped";
+
+      if (!newGroups[folderName]) {
+        newGroups[folderName] = [];
+      }
+
+      newGroups[folderName].push({
+        file,
+        url: URL.createObjectURL(file),
+      });
     });
-    setSelectedGroupIndex((prevIndex) =>
-      groupIndex === prevIndex ? 0 : Math.max(prevIndex - 1, 0)
-    );
+
+    setFileGroups((prevGroups) => [...prevGroups, ...Object.values(newGroups)]);
   };
 
   const onFileChange = (event) => {
-    const newFiles = [...event.target.files];
-    updateFiles(newFiles);
-    event.target.value = ""; // 인풋 필드 초기화
+    const files = event.target.files;
+    updateFiles(files);
+    event.target.value = ""; // Reset input field
   };
 
   const onDrop = (event) => {
     event.preventDefault();
     event.stopPropagation();
-    const newFiles = [...event.dataTransfer.files];
-    updateFiles(newFiles);
+    const files = event.dataTransfer.files;
+    updateFiles(files);
   };
 
   const handleGroupClick = (groupIndex) => {
@@ -119,19 +114,27 @@ const ControlPanel = ({
     handleFileSelect(fileGroups[groupIndex]);
   };
 
-  const handleUploadClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  const handleUploadClick = (inputRef) => {
+    if (inputRef.current) {
+      inputRef.current.click();
     }
   };
 
   const handleNext = () => {
+    if (fileGroups.length === 0) {
+      alert("No files to navigate.");
+      return;
+    }
     const newIndex = Math.min(selectedGroupIndex + 1, fileGroups.length - 1);
     setSelectedGroupIndex(newIndex);
     handleFileSelect(fileGroups[newIndex]);
   };
 
   const handlePrev = () => {
+    if (fileGroups.length === 0) {
+      alert("No files to navigate.");
+      return;
+    }
     const newIndex = Math.max(selectedGroupIndex - 1, 0);
     setSelectedGroupIndex(newIndex);
     handleFileSelect(fileGroups[newIndex]);
@@ -147,24 +150,56 @@ const ControlPanel = ({
 
   return (
     <div className="control-panel">
-      <h1>파일 목록</h1>
-      <FileUpload
-        onFileChange={onFileChange}
-        onDrop={onDrop}
-        handleUploadClick={handleUploadClick}
-        ref={fileInputRef} // ref 전달
-      />
-      <FileGroupList
-        fileGroups={fileGroups}
-        selectedGroupIndex={selectedGroupIndex}
-        handleGroupClick={handleGroupClick}
-        deleteGroup={deleteGroup}
-        handlePrev={handlePrev}
-        handleNext={handleNext}
-      />
-      <button className="capture-button" onClick={handleCapture}>
-        Capture
-      </button>
+      <h1>파일 및 폴더 업로드</h1>
+      <div className="upload-section">
+        <FileUpload
+          onFileChange={onFileChange}
+          handleUploadClick={() => handleUploadClick(fileInputRef)}
+          onDrop={onDrop}
+          ref={fileInputRef}
+        />
+        <FolderUpload
+          onFileChange={onFileChange}
+          onDrop={onDrop}
+          handleUploadClick={() => handleUploadClick(folderInputRef)}
+          ref={folderInputRef}
+        />
+        <ZipUpload
+          onFileChange={onFileChange}
+          onDrop={onDrop}
+          handleUploadClick={() => handleUploadClick(zipInputRef)}
+          ref={zipInputRef}
+        />
+      </div>
+      <div className="file-group-capture-section">
+        <FileGroupList
+          fileGroups={fileGroups}
+          selectedGroupIndex={selectedGroupIndex}
+          handleGroupClick={handleGroupClick}
+          deleteGroup={(index) =>
+            setFileGroups(fileGroups.filter((_, i) => i !== index))
+          }
+        />
+        <div className="capture-and-navigation">
+          <div className="navigation-buttons">
+            <button
+              onClick={handlePrev}
+              disabled={fileGroups.length === 0 || selectedGroupIndex === 0}
+            >
+              PREV
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={
+                fileGroups.length === 0 ||
+                selectedGroupIndex === fileGroups.length - 1
+              }
+            >
+              NEXT
+            </button>
+          </div>
+        </div>
+      </div>
       <LightingControlPanel
         keyLightIntensity={ambientIntensity}
         setKeyLightIntensity={setAmbientIntensity}
@@ -172,6 +207,8 @@ const ControlPanel = ({
         setFillLightIntensity={setPointIntensity}
         handleResetCamera={handleResetCamera}
         handleCapture={handleCapture}
+        backgroundColor={backgroundColor} // backgroundColor 전달
+        setBackgroundColor={setBackgroundColor} // setBackgroundColor 전달
       />
     </div>
   );

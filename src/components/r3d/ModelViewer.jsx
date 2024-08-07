@@ -11,7 +11,7 @@ import DAELoaderComponent from "./loaders/DAELoaderComponent";
 import PCDLoaderComponent from "./loaders/PCDLoaderComponent";
 import GLBLoaderComponent from "./loaders/GLBLoaderComponent";
 import ControlPanel from "./ControlPanel";
-import Preview from "./Preview"; // Import the Preview component
+import Preview from "./Preview";
 import "./ModelViewer.css";
 
 const defaultCameraSettings = {
@@ -201,11 +201,8 @@ const ModelViewer = () => {
           setPointIntensity={setPointIntensity}
           spotIntensity={spotIntensity}
           setSpotIntensity={setSpotIntensity}
-          spotAngle={spotAngle}
-          setSpotAngle={setSpotAngle}
-          handleCapture={handleCapture}
-          backgroundColor={backgroundColor}
           setBackgroundColor={setBackgroundColor}
+          handleCapture={handleCapture}
         />
       </div>
       <div className="model-viewer-content">

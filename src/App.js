@@ -1,7 +1,7 @@
 // App.js
 import React, { useState } from "react";
 import ModelViewer from "./components/r3d/ModelViewer";
-import "./App.css";
+import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 
 const App = () => {
   const [selectedFile, setSelectedFile] = useState(null);

@@ -1,57 +1,57 @@
-/* ControlPanel 스타일 */
+/* ControlPanel.css */
+
 .control-panel {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  min-width: 400px;
-  height: 100vh;
-  margin: 20px auto;
-  /* padding: 20px;  */
-  background: linear-gradient(135deg, #ffffff, #f0f0f0);
-  border-radius: 15px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  font-family: Arial, sans-serif;
 }
 
-.control-panel h1 {
-  text-align: center;
-  color: #333;
-  font-size: 26px;
+h1 {
+  font-size: 1.5rem;
   margin-bottom: 20px;
-  font-weight: 600;
+  text-align: center;
+  color: #343a40;
 }
 
-/* File Upload 스타일 */
-.file-upload {
+.upload-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.upload-section > * {
+  margin: 5px;
+  flex: 1 1 auto; /* Allows elements to grow/shrink as needed */
+}
+
+.file-group-capture-section {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.file-list-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  width: 100%;
   margin-bottom: 20px;
 }
 
-.file-upload input[type="file"] {
-  display: none;
-}
-
-.file-upload button {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: #fff;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.file-upload button:hover {
-  background: linear-gradient(135deg, #0056b3, #003a8c);
-}
-
-/* FileGroupList 스타일 */
 .file-list {
-  margin-bottom: 20px;
-  min-height: 30%; /* 높이 조정 */
-  overflow-y: auto; /* 스크롤 가능하게 설정 */
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 400px; /* Adjusted to fit more items */
 }
 
 .file-list ul {
@@ -60,147 +60,139 @@
   margin: 0;
 }
 
-.file-list .file-group {
-  padding: 10px;
-  border-radius: 10px;
+.file-group {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
   margin: 5px 0;
-  transition: background 0.3s, color 0.3s;
+  padding: 10px;
   cursor: pointer;
+  background-color: #ffffff;
+  font-size: 0.875rem; /* Smaller font size for better fit */
 }
 
-.file-list .file-group:hover {
-  background-color: #f0f4f8;
+.file-group.selected {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
 }
 
-.file-list .file-group.selected {
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: #fff;
-}
-
-.file-list .file-group .group-header {
+.group-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.file-list .file-group .group-header-title {
+.group-header-title {
+  font-size: 1rem;
   font-weight: bold;
 }
 
-.file-list .file-group .delete-group-button {
-  background: none;
+.delete-group-button {
+  font-size: 0.75rem;
+  background-color: #dc3545;
+  color: #ffffff;
   border: none;
-  color: #f44336;
+  padding: 4px 8px;
   cursor: pointer;
+  border-radius: 4px;
 }
 
-.file-list .file-group .delete-group-button:hover {
-  color: #d32f2f;
+.delete-group-button:hover {
+  background-color: #c82333;
 }
 
-.file-list .file-item {
-  padding: 5px 0;
+.file-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid #dee2e6;
 }
 
-.file-list .file-item img.file-preview {
-  max-width: 50px;
-  max-height: 50px;
-  margin-left: 10px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
+.file-item p {
+  margin: 0;
+  font-size: 0.875rem; /* Smaller font size for better fit */
+}
+
+.capture-and-navigation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
 }
 
 .navigation-buttons {
   display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
+  justify-content: center;
+  margin-bottom: 10px;
 }
 
 .navigation-buttons button {
-  padding: 10px;
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: #fff;
+  background-color: #007bff;
+  color: #ffffff;
   border: none;
-  border-radius: 25px;
+  padding: 10px 20px;
   cursor: pointer;
-  transition: background 0.3s;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin: 0 5px;
 }
 
 .navigation-buttons button:disabled {
-  background-color: #ccc;
+  background-color: #d6d6d6;
   cursor: not-allowed;
 }
 
 .navigation-buttons button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0056b3, #003a8c);
+  background-color: #0056b3;
 }
 
-/* Capture 버튼 스타일 */
 .capture-button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, #28a745, #218838);
-  color: #fff;
+  background-color: #28a745;
+  color: #ffffff;
   border: none;
-  border-radius: 25px;
+  padding: 10px 20px;
   cursor: pointer;
-  margin-bottom: 20px;
-  transition: background 0.3s;
+  border-radius: 4px;
+  font-size: 1rem;
 }
 
 .capture-button:hover {
-  background: linear-gradient(135deg, #218838, #1c7430);
+  background-color: #218838;
 }
 
-/* LightingControlPanel 스타일 */
 .lighting-control-panel {
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.lighting-control-panel h2 {
-  text-align: center;
-  color: #333;
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
-.control {
-  margin-bottom: 20px;
-}
-
-.control label {
-  display: block;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.control input[type="range"],
-.control input[type="number"] {
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-.button-group {
-  text-align: center;
   margin-top: 20px;
 }
 
-.button-group button {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  color: #fff;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background 0.3s;
+/* Added styles for ZipUpload component */
+.zip-upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px;
 }
 
-.button-group button:hover {
-  background: linear-gradient(135deg, #c82333, #bd2130);
+.zip-upload-button {
+  background-color: #17a2b8;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin: 5px;
+}
+
+.zip-upload-button:hover {
+  background-color: #138496;
+}
+
+.zip-upload-input {
+  display: none; /* Hide the native file input */
+}
+
+.zip-upload-description {
+  font-size: 0.875rem;
+  color: #495057;
+  margin: 5px 0;
 }

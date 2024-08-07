@@ -52,12 +52,6 @@ const FileGroupList = ({
                     <p>{fileObj.file.name}</p>
                     {IMAGE_FILE_TYPES.includes(
                       fileObj.file.name.split(".").pop().toLowerCase()
-                    ) && (
-                      <img
-                        src={fileObj.url}
-                        alt={fileObj.file.name}
-                        className="file-preview"
-                      />
                     )}
                   </li>
                 ))}

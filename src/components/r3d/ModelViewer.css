@@ -3,30 +3,23 @@
 .model-viewer-container {
   display: flex;
   height: 100vh;
-  background-color: #f5f5f5;
-  overflow: hidden; /* Prevent horizontal overflow */
+  overflow: hidden;
 }
 
 .control-panel {
-  width: 30%;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
+  flex: 1;
+  padding: 20px;
+  background-color: #f0f0f0;
+  border-right: 1px solid #ddd;
   box-sizing: border-box;
-  max-height: 100vh; /* Ensure it fits within the viewport height */
-  display: flex;
-  flex-direction: column;
-  padding: 20px; /* Add internal padding */
+  overflow-y: auto;
 }
 
 .model-viewer-content {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #e0e0e0;
+  flex: 3;
   position: relative;
+  background-color: #eaeaea;
+  box-sizing: border-box;
 }
 
 .model-canvas {
@@ -35,236 +28,15 @@
 }
 
 .preview-container {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e0e0e0;
-  padding: 10px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex: 1;
+  padding: 20px;
+  background-color: #f8f8f8;
+  border-left: 1px solid #ddd;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .preview-container img {
-  max-width: 150px;
-  height: auto;
-  display: block;
-}
-
-button {
-  background-color: #007bff;
-  color: #ffffff;
-  padding: 10px 15px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  margin: 5px 0;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-input[type="file"] {
-  display: none;
-}
-
-.file-upload-label {
-  display: block;
-  padding: 10px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  border-radius: 4px;
-  text-align: center;
-  margin: 10px 0;
-  transition: background-color 0.3s ease;
-}
-
-.file-upload-label:hover {
-  background-color: #0056b3;
-}
-
-input[type="range"] {
-  width: 100%;
-  margin: 10px 0;
-}
-
-label {
-  display: block;
-  margin: 10px 0;
-  font-weight: bold;
-  color: #333;
-}
-
-/* File list styles */
-.file-list {
-  flex-grow: 1; /* Takes up remaining space in control panel */
-  margin-bottom: 20px;
-  max-height: 70vh; /* Adjust the height of file list */
-  overflow-y: auto; /* Make the file list scrollable */
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
-  padding: 10px 0;
-}
-
-.file-list ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.file-list .file-group {
-  padding: 10px;
-  border-radius: 10px;
-  margin: 5px 0;
-  transition: background 0.3s, color 0.3s;
-  cursor: pointer;
-}
-
-.file-list .file-group:hover {
-  background-color: #f0f4f8;
-}
-
-.file-list .file-group.selected {
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: #fff;
-}
-
-.file-list .file-group .group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.file-list .file-group .group-header-title {
-  font-weight: bold;
-}
-
-.file-list .file-group .delete-group-button {
-  background: none;
-  border: none;
-  color: #f44336;
-  cursor: pointer;
-}
-
-.file-list .file-group .delete-group-button:hover {
-  color: #d32f2f;
-}
-
-.file-list .file-item {
-  padding: 5px 0;
-  display: flex;
-  align-items: center;
-}
-
-.file-list .file-item img {
-  max-width: 50px;
-  max-height: 50px;
-  margin-left: 10px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-}
-
-.file-preview {
-  max-width: 150px;
-  max-height: 150px;
-}
-
-.navigation-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-
-.navigation-buttons button {
-  padding: 10px;
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: #fff;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.navigation-buttons button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.navigation-buttons button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #0056b3, #003a8c);
-}
-
-/* Capture button style */
-.capture-button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, #28a745, #218838);
-  color: #fff;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  margin-bottom: 20px;
-  transition: background 0.3s;
-}
-
-.capture-button:hover {
-  background: linear-gradient(135deg, #218838, #1c7430);
-}
-
-/* Lighting Control Panel styles */
-.lighting-control-panel {
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.lighting-control-panel h2 {
-  text-align: center;
-  color: #333;
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
-.control {
-  margin-bottom: 20px;
-}
-
-.control label {
-  display: block;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-.control input[type="range"],
-.control input[type="number"] {
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-.button-group {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.button-group button {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  color: #fff;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.button-group button:hover {
-  background: linear-gradient(135deg, #c82333, #bd2130);
+  max-width: 100%;
+  max-height: 100%;
 }

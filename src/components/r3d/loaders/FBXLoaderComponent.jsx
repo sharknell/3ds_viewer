@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useFBX } from "@react-three/drei";
-import { TextureLoader } from "three";
+import { useThree, useLoader } from "@react-three/fiber";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import { TextureLoader, Box3, Vector3 } from "three";
 import { Html } from "@react-three/drei";
 import "./FBXLoaderComponent.css";
 
 const FBXLoaderComponent = ({ url, textures }) => {
-  const fbx = useFBX(url);
+  const { camera } = useThree();
+  const fbx = useLoader(FBXLoader, url);
   const [loadedTextures, setLoadedTextures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -56,8 +58,19 @@ const FBXLoaderComponent = ({ url, textures }) => {
           }
         }
       });
+
+      // Adjust camera's far clipping plane to increase rendering distance
+      camera.far = 10000;
+      camera.updateProjectionMatrix();
+
+      // Center the object and adjust its position
+      const box = new Box3().setFromObject(fbx);
+      const size = box.getSize(new Vector3());
+      const center = box.getCenter(new Vector3());
+      fbx.position.sub(center);
+      fbx.position.y = size.y / 2;
     }
-  }, [fbx, loadedTextures]);
+  }, [fbx, loadedTextures, camera]);
 
   if (loading) {
     return (
@@ -73,7 +86,7 @@ const FBXLoaderComponent = ({ url, textures }) => {
         <div className="error-container">
           <div className="error-icon">❌</div>
           <div className="error-message">
-            Error loading textures: {error.message}
+            Error loading model or textures: {error.message}
           </div>
         </div>
       </Html>
@@ -84,7 +97,7 @@ const FBXLoaderComponent = ({ url, textures }) => {
     return null;
   }
 
-  return <primitive object={fbx} scale={0.1} />;
+  return <primitive object={fbx} scale={1} />;
 };
 
 export default FBXLoaderComponent;

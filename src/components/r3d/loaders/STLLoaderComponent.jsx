@@ -53,7 +53,7 @@ const STLLoaderComponent = ({ url }) => {
 
   return (
     <mesh geometry={geometry} scale={0.01}>
-      <meshStandardMaterial color="gray" />
+      <meshStandardMaterial />
     </mesh>
   );
 };
