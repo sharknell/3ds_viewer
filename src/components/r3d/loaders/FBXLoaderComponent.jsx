@@ -7,10 +7,28 @@ import "./FBXLoaderComponent.css";
 
 const FBXLoaderComponent = ({ url, textures }) => {
   const { camera } = useThree();
-  const fbx = useLoader(FBXLoader, url);
+  const [fbx, setFbx] = useState(null);
   const [loadedTextures, setLoadedTextures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loader = new FBXLoader();
+    loader.load(
+      url,
+      (loadedFbx) => {
+        console.log("FBX model loaded successfully");
+        setFbx(loadedFbx);
+        setLoading(false);
+      },
+      undefined,
+      (err) => {
+        console.error("Error loading FBX model:", err);
+        setError(err);
+        setLoading(false);
+      }
+    );
+  }, [url]);
 
   useEffect(() => {
     if (textures && textures.length > 0) {
@@ -25,6 +43,7 @@ const FBXLoaderComponent = ({ url, textures }) => {
             },
             undefined,
             (err) => {
+              console.error("Error loading texture:", err);
               reject(err);
             }
           );
@@ -34,19 +53,16 @@ const FBXLoaderComponent = ({ url, textures }) => {
       Promise.all(texturesPromises)
         .then((textures) => {
           setLoadedTextures(textures);
-          setLoading(false);
         })
         .catch((err) => {
+          console.error("Error processing textures:", err);
           setError(err);
-          setLoading(false);
         });
-    } else {
-      setLoading(false);
     }
   }, [textures]);
 
   useEffect(() => {
-    if (fbx && loadedTextures.length > 0) {
+    if (fbx) {
       fbx.traverse((child) => {
         if (child.isMesh) {
           const texture = loadedTextures.find(
@@ -59,16 +75,25 @@ const FBXLoaderComponent = ({ url, textures }) => {
         }
       });
 
-      // Adjust camera's far clipping plane to increase rendering distance
-      camera.far = 10000;
-      camera.updateProjectionMatrix();
-
-      // Center the object and adjust its position
+      // Compute the bounding box of the model
       const box = new Box3().setFromObject(fbx);
       const size = box.getSize(new Vector3());
       const center = box.getCenter(new Vector3());
+
+      // Calculate the scale to fit the model within the desired size
+      const maxDimension = Math.max(size.x, size.y, size.z);
+      const scale = 1 / maxDimension;
+      fbx.scale.set(scale, scale, scale);
+
+      // Center the object
       fbx.position.sub(center);
       fbx.position.y = size.y / 2;
+
+      // Adjust the camera to fit the scaled model
+      const distance = Math.max(size.x, size.y, size.z) * 2;
+      camera.position.set(0, distance, distance);
+      camera.lookAt(center);
+      camera.updateProjectionMatrix();
     }
   }, [fbx, loadedTextures, camera]);
 
@@ -97,7 +122,7 @@ const FBXLoaderComponent = ({ url, textures }) => {
     return null;
   }
 
-  return <primitive object={fbx} scale={1} />;
+  return <primitive object={fbx} scale={0.01} />;
 };
 
 export default FBXLoaderComponent;

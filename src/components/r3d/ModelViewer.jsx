@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
-import { DirectionalLight, Vector3 } from "three";
+import { Box3, Vector3 } from "three";
 import OBJLoaderComponent from "./loaders/OBJLoaderComponent";
 import FBXLoaderComponent from "./loaders/FBXLoaderComponent";
 import STLLoaderComponent from "./loaders/STLLoaderComponent";
@@ -14,59 +14,7 @@ import ControlPanel from "./ControlPanel";
 import Preview from "./Preview";
 import "./ModelViewer.css";
 
-const defaultCameraSettings = {
-  position: new Vector3(0, 10, 40),
-  fov: 39.5978,
-  near: 0.1,
-  far: 1000 * 3,
-};
-
-const DefaultLightList = [
-  {
-    name: "DefaultKeyLight",
-    color: 0xfff2db,
-    intensity: 1.4,
-    position: new Vector3(6.7, 9.5, 8),
-  },
-  {
-    name: "DefaultFillLight",
-    color: 0xfdfdfd,
-    intensity: 1,
-    position: new Vector3(-10, 4.7, 5),
-  },
-  {
-    name: "DefaultBackLight",
-    color: 0xedfaff,
-    intensity: 1,
-    position: new Vector3(-3, 5, -10),
-  },
-];
-
-const CameraAndLighting = () => {
-  const { camera, scene } = useThree();
-
-  useEffect(() => {
-    if (camera) {
-      camera.position.copy(defaultCameraSettings.position);
-      camera.fov = defaultCameraSettings.fov;
-      camera.near = defaultCameraSettings.near;
-      camera.far = defaultCameraSettings.far;
-      camera.updateProjectionMatrix();
-    }
-
-    if (scene) {
-      DefaultLightList.forEach((light) => {
-        const dirLight = new DirectionalLight(light.color, light.intensity);
-        dirLight.position.copy(light.position);
-        scene.add(dirLight);
-      });
-    }
-  }, [camera, scene]);
-
-  return null;
-};
-
-const ModelLoader = ({ modelUrl, fileType, textures, mtlUrl }) => {
+const ModelLoader = ({ modelUrl, fileType, textures, mtlUrl, onModelLoad }) => {
   const LoaderComponent = {
     fbx: FBXLoaderComponent,
     stl: STLLoaderComponent,
@@ -79,8 +27,24 @@ const ModelLoader = ({ modelUrl, fileType, textures, mtlUrl }) => {
   }[fileType];
 
   return LoaderComponent ? (
-    <LoaderComponent url={modelUrl} textures={textures} mtlUrl={mtlUrl} />
+    <LoaderComponent
+      url={modelUrl}
+      textures={textures}
+      mtlUrl={mtlUrl}
+      onModelLoad={onModelLoad}
+    />
   ) : null;
+};
+
+const CameraController = ({ onModelLoad }) => {
+  const { camera } = useThree();
+  const controlsRef = useRef();
+
+  useEffect(() => {
+    onModelLoad(camera, controlsRef);
+  }, [camera, onModelLoad]);
+
+  return <OrbitControls ref={controlsRef} />;
 };
 
 const ModelViewer = () => {
@@ -95,6 +59,7 @@ const ModelViewer = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [modelFileName, setModelFileName] = useState("");
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+
   const controlsRef = useRef();
   const canvasRef = useRef();
 
@@ -185,6 +150,25 @@ const ModelViewer = () => {
     }
   };
 
+  const handleModelLoad = useCallback((camera, controlsRef) => {
+    return (model) => {
+      if (model) {
+        const boundingBox = new Box3().setFromObject(model);
+        const center = boundingBox.getCenter(new Vector3());
+        const size = boundingBox.getSize(new Vector3());
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const fov = camera.fov * (Math.PI / 180);
+        let cameraZ = Math.abs((maxDim / 4) * Math.tan(fov * 2));
+
+        cameraZ *= 1.5; // Optionally apply an additional factor to zoom out a little
+        camera.position.set(center.x, center.y, cameraZ);
+        camera.lookAt(center);
+        controlsRef.current.target.set(center.x, center.y, center.z);
+      }
+    };
+  }, []);
+
   return (
     <div className="model-viewer-container">
       <div className="control-panel">
@@ -210,6 +194,12 @@ const ModelViewer = () => {
           className="model-canvas"
           ref={canvasRef}
           style={{ background: backgroundColor }}
+          camera={{
+            position: [0, 10, 40],
+            fov: 39.5978,
+            near: 0.1,
+            far: 3000,
+          }}
         >
           <ambientLight intensity={ambientIntensity} />
           <pointLight position={[1, 1, 1]} intensity={pointIntensity} />
@@ -218,14 +208,29 @@ const ModelViewer = () => {
             angle={spotAngle}
             position={[10, 10, 10]}
           />
+          <directionalLight
+            color={0xfff2db}
+            intensity={1.4}
+            position={[6.7, 9.5, 8]}
+          />
+          <directionalLight
+            color={0xfdfdfd}
+            intensity={1}
+            position={[-10, 4.7, 5]}
+          />
+          <directionalLight
+            color={0xedfaff}
+            intensity={1}
+            position={[-3, 5, -10]}
+          />
           <Environment preset="sunset" />
-          <OrbitControls ref={controlsRef} />
-          <CameraAndLighting />
+          <CameraController onModelLoad={handleModelLoad} />
           <ModelLoader
             modelUrl={modelUrl}
             fileType={fileType}
             textures={textures}
             mtlUrl={mtlUrl}
+            onModelLoad={handleModelLoad}
           />
         </Canvas>
       </div>
