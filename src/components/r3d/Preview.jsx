@@ -24,7 +24,7 @@ const Preview = ({ capturedImage }) => {
             component="img"
             image={capturedImage}
             alt="Captured Preview"
-            sx={{ height: 300, objectFit: "contain" }}
+            sx={{ height: 400, objectFit: "contain" }}
           />
         ) : (
           <CardContent>
