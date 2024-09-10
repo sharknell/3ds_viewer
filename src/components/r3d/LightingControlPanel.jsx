@@ -68,8 +68,8 @@ const LightingControlPanel = ({
         <Control>
           <Typography>Key Light Intensity:</Typography>
           <Slider
-            min={-10}
-            max={10}
+            min={-100}
+            max={100}
             step={0.1}
             value={keyLightIntensity}
             onChange={(e, newValue) => setKeyLightIntensity(newValue)}
@@ -87,8 +87,8 @@ const LightingControlPanel = ({
         <Control>
           <Typography>Fill Light Intensity:</Typography>
           <Slider
-            min={0}
-            max={10}
+            min={-100}
+            max={100}
             step={0.1}
             value={fillLightIntensity}
             onChange={(e, newValue) => setFillLightIntensity(newValue)}
@@ -96,7 +96,7 @@ const LightingControlPanel = ({
           />
           <TextField
             type="number"
-            InputProps={{ inputProps: { min: 0, max: 10, step: 0.1 } }}
+            InputProps={{ inputProps: { min: -10, max: 100, step: 0.1 } }}
             value={fillLightIntensity}
             onChange={(e) => setFillLightIntensity(parseFloat(e.target.value))}
             variant="outlined"

@@ -46,7 +46,6 @@ const CameraController = ({ onModelLoad }) => {
 
   return <OrbitControls ref={controlsRef} />;
 };
-
 const ModelViewer = () => {
   const [modelUrl, setModelUrl] = useState(null);
   const [textures, setTextures] = useState([]);
@@ -85,7 +84,7 @@ const ModelViewer = () => {
       file.name.toLowerCase().endsWith(fileType)
     );
     const textureFiles = files.filter((file) =>
-      ["jpg", "jpeg", "png", "tif"].includes(
+      ["jpg", "jpeg", "png", "tif", "bmp"].includes(
         file.name.split(".").pop().toLowerCase()
       )
     );
@@ -104,7 +103,6 @@ const ModelViewer = () => {
     setMtlUrl(mtlFile ? URL.createObjectURL(mtlFile) : null);
     setFileType(fileType);
   }, []);
-
   useEffect(() => {
     return () => {
       // Clean up URLs when component unmounts
@@ -168,7 +166,6 @@ const ModelViewer = () => {
       }
     };
   }, []);
-
   return (
     <div className="model-viewer-container">
       <div className="control-panel">
@@ -240,5 +237,4 @@ const ModelViewer = () => {
     </div>
   );
 };
-
 export default ModelViewer;

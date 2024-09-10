@@ -6,9 +6,8 @@ import FolderUpload from "./FolderUpload";
 import ZipUpload from "./ZipUpload"; // Import ZipUpload component
 
 const ACCEPTED_FILE_TYPES =
-  ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb";
-const IMAGE_FILE_TYPES = ["jpg", "jpeg", "png", "tif"];
-
+  ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb,.bmp";
+const IMAGE_FILE_TYPES = ["jpg", "jpeg", "png", "tif", "bmp"];
 const FileGroupList = ({
   fileGroups,
   selectedGroupIndex,

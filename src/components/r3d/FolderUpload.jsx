@@ -2,10 +2,8 @@
 import React, { forwardRef } from "react";
 import { MdFolderOpen } from "react-icons/md";
 import "./FolderUpload.css";
-
 const ACCEPTED_FILE_TYPES =
-  ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb";
-
+  ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb,.bmp";
 const FolderUpload = forwardRef(
   ({ onFileChange, onDrop, handleUploadClick }, ref) => (
     <div className="folder-upload">

@@ -4,8 +4,7 @@ import { MdFileUpload } from "react-icons/md";
 import "./FileUpload.css";
 
 const ACCEPTED_FILE_TYPES =
-  ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb";
-
+  ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb,.bmp";
 const FileUpload = forwardRef(
   ({ onFileChange, onDrop, handleUploadClick }, ref) => (
     <div className="file-upload">

@@ -15,7 +15,7 @@ const TDSLoaderComponent = ({ url }) => {
       url,
       (object) => {
         object.position.set(-7.5, -7.5, 0); // Example position adjustment
-        object.scale.set(0.1, 0.1, 0.1); // Example scale adjustment
+        object.scale.set(10, 10, 10); // Increase the scale to make the model larger
 
         setModel(object);
         setLoading(false);
