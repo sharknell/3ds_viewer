@@ -40,3 +40,9 @@ ZIP 파일 업로드</b>
 
  <h2>Demo</h2>
   <p>프로젝트의 데모를 확인하려면 <a href="https://three3d-viewer.netlify.app/" target="_blank">여기</a>를 클릭하세요.</p>
+
+
+
+
+  Update History : 09 / 10 
+                .bmp 확장자 텍스쳐파일 사용 여부 판단 및 수정 후 업데이트 완료
