@@ -1,59 +1,103 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import "./ControlPanel.css";
 import LightingControlPanel from "./LightingControlPanel";
 import FileUpload from "./FileUpload";
 import FolderUpload from "./FolderUpload";
-import ZipUpload from "./ZipUpload"; // Import ZipUpload component
+import ZipUpload from "./ZipUpload";
+import {
+  FaFile,
+  FaImage,
+  FaChevronLeft,
+  FaChevronRight,
+  FaTrash,
+} from "react-icons/fa";
 
 const ACCEPTED_FILE_TYPES =
-  ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb,.bmp";
-const IMAGE_FILE_TYPES = ["jpg", "jpeg", "png", "tif", "bmp"];
-const FileGroupList = ({
-  fileGroups,
-  selectedGroupIndex,
-  handleGroupClick,
-  deleteGroup,
-}) => (
-  <div className="file-list-container">
-    <div className="file-list">
-      {fileGroups.length > 0 && (
-        <ul>
-          {fileGroups.map((group, groupIndex) => (
-            <li
-              key={groupIndex}
-              className={`file-group ${
-                selectedGroupIndex === groupIndex ? "selected" : ""
-              }`}
-              onClick={() => handleGroupClick(groupIndex)}
-            >
-              <div className="group-header">
-                <p className="group-header-title">Group {groupIndex + 1}</p>
-                <button
-                  className="delete-group-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteGroup(groupIndex);
-                  }}
-                >
-                  삭제
-                </button>
-              </div>
-              <ul>
-                {group.map((fileObj, fileIndex) => (
-                  <li key={fileIndex} className="file-item">
-                    <p>{fileObj.file.name}</p>
-                    {IMAGE_FILE_TYPES.includes(
-                      fileObj.file.name.split(".").pop().toLowerCase()
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
-      )}
+  ".fbx,.stl,.mtl,.obj,.ply,.dae,.3ds,.jpg,.jpeg,.png,.tif,.pcd,.glb";
+const IMAGE_FILE_TYPES = ["jpg", "jpeg", "png", "tif"];
+
+const FileGroupList = React.memo(
+  ({
+    fileGroups,
+    selectedGroupIndex,
+    handleGroupClick,
+    deleteGroup,
+    handlePrev,
+    handleNext,
+  }) => (
+    <div className="file-list-container">
+      <div className="navigation-buttons">
+        <button
+          onClick={handlePrev}
+          disabled={selectedGroupIndex === 0}
+          className="nav-button"
+          aria-label="이전 그룹"
+        >
+          <FaChevronLeft /> 이전
+        </button>
+        <button
+          onClick={handleNext}
+          disabled={selectedGroupIndex === fileGroups.length - 1}
+          className="nav-button"
+          aria-label="다음 그룹"
+        >
+          다음 <FaChevronRight />
+        </button>
+      </div>
+      <div className="file-list">
+        {fileGroups.length > 0 && (
+          <ul className="group-list">
+            {fileGroups.map((group, groupIndex) => (
+              <li
+                key={groupIndex}
+                className={`file-group ${
+                  selectedGroupIndex === groupIndex ? "selected" : ""
+                }`}
+                onClick={() => handleGroupClick(groupIndex)}
+              >
+                <div className="group-header">
+                  <h3 className="group-header-title">그룹 {groupIndex + 1}</h3>
+                  <button
+                    className="delete-group-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteGroup(groupIndex);
+                    }}
+                    aria-label={`그룹 ${groupIndex + 1} 삭제`}
+                  >
+                    <FaTrash /> 삭제
+                  </button>
+                </div>
+                <ul className="file-list">
+                  {group.map((fileObj, fileIndex) => (
+                    <li key={fileIndex} className="file-item">
+                      {IMAGE_FILE_TYPES.includes(
+                        fileObj.file.name.split(".").pop().toLowerCase()
+                      ) ? (
+                        <FaImage
+                          className="file-icon"
+                          aria-label="이미지 파일"
+                        />
+                      ) : (
+                        <FaFile className="file-icon" aria-label="일반 파일" />
+                      )}
+                      <p>{fileObj.file.name}</p>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
-  </div>
+  )
 );
 
 const ControlPanel = ({
@@ -64,8 +108,8 @@ const ControlPanel = ({
   pointIntensity,
   setPointIntensity,
   handleCapture,
-  backgroundColor, // backgroundColor prop 추가
-  setBackgroundColor, // setBackgroundColor prop 추가
+  backgroundColor,
+  setBackgroundColor,
 }) => {
   const [fileGroups, setFileGroups] = useState([]);
   const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
@@ -73,7 +117,7 @@ const ControlPanel = ({
   const folderInputRef = useRef(null);
   const zipInputRef = useRef(null);
 
-  const updateFiles = (files) => {
+  const updateFiles = useCallback((files) => {
     const newGroups = {};
 
     Array.from(files).forEach((file) => {
@@ -93,51 +137,60 @@ const ControlPanel = ({
     });
 
     setFileGroups((prevGroups) => [...prevGroups, ...Object.values(newGroups)]);
-  };
+  }, []);
 
-  const onFileChange = (event) => {
-    const files = event.target.files;
-    updateFiles(files);
-    event.target.value = ""; // Reset input field
-  };
+  const onFileChange = useCallback(
+    (event) => {
+      const files = event.target.files;
+      updateFiles(files);
+      event.target.value = ""; // Reset input field
+    },
+    [updateFiles]
+  );
 
-  const onDrop = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const files = event.dataTransfer.files;
-    updateFiles(files);
-  };
+  const onDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const files = event.dataTransfer.files;
+      updateFiles(files);
+    },
+    [updateFiles]
+  );
 
-  const handleGroupClick = (groupIndex) => {
-    setSelectedGroupIndex(groupIndex);
-    handleFileSelect(fileGroups[groupIndex]);
-  };
+  const handleGroupClick = useCallback(
+    (groupIndex) => {
+      setSelectedGroupIndex(groupIndex);
+      handleFileSelect(fileGroups[groupIndex]);
+    },
+    [fileGroups, handleFileSelect]
+  );
 
-  const handleUploadClick = (inputRef) => {
+  const handleUploadClick = useCallback((inputRef) => {
     if (inputRef.current) {
       inputRef.current.click();
     }
-  };
+  }, []);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (fileGroups.length === 0) {
-      alert("No files to navigate.");
+      alert("탐색할 파일이 없습니다.");
       return;
     }
     const newIndex = Math.min(selectedGroupIndex + 1, fileGroups.length - 1);
     setSelectedGroupIndex(newIndex);
     handleFileSelect(fileGroups[newIndex]);
-  };
+  }, [fileGroups, selectedGroupIndex, handleFileSelect]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (fileGroups.length === 0) {
-      alert("No files to navigate.");
+      alert("탐색할 파일이 없습니다.");
       return;
     }
     const newIndex = Math.max(selectedGroupIndex - 1, 0);
     setSelectedGroupIndex(newIndex);
     handleFileSelect(fileGroups[newIndex]);
-  };
+  }, [fileGroups, selectedGroupIndex, handleFileSelect]);
 
   useEffect(() => {
     return () => {
@@ -146,6 +199,22 @@ const ControlPanel = ({
       });
     };
   }, [fileGroups]);
+
+  const memoizedFileGroupList = useMemo(
+    () => (
+      <FileGroupList
+        fileGroups={fileGroups}
+        selectedGroupIndex={selectedGroupIndex}
+        handleGroupClick={handleGroupClick}
+        deleteGroup={(index) =>
+          setFileGroups(fileGroups.filter((_, i) => i !== index))
+        }
+        handlePrev={handlePrev}
+        handleNext={handleNext}
+      />
+    ),
+    [fileGroups, selectedGroupIndex, handleGroupClick, handlePrev, handleNext]
+  );
 
   return (
     <div className="control-panel">
@@ -156,6 +225,7 @@ const ControlPanel = ({
           handleUploadClick={() => handleUploadClick(fileInputRef)}
           onDrop={onDrop}
           ref={fileInputRef}
+          acceptedFileTypes={ACCEPTED_FILE_TYPES}
         />
         <FolderUpload
           onFileChange={onFileChange}
@@ -170,35 +240,7 @@ const ControlPanel = ({
           ref={zipInputRef}
         />
       </div>
-      <div className="file-group-capture-section">
-        <FileGroupList
-          fileGroups={fileGroups}
-          selectedGroupIndex={selectedGroupIndex}
-          handleGroupClick={handleGroupClick}
-          deleteGroup={(index) =>
-            setFileGroups(fileGroups.filter((_, i) => i !== index))
-          }
-        />
-        <div className="capture-and-navigation">
-          <div className="navigation-buttons">
-            <button
-              onClick={handlePrev}
-              disabled={fileGroups.length === 0 || selectedGroupIndex === 0}
-            >
-              PREV
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={
-                fileGroups.length === 0 ||
-                selectedGroupIndex === fileGroups.length - 1
-              }
-            >
-              NEXT
-            </button>
-          </div>
-        </div>
-      </div>
+      <div className="file-group-capture-section">{memoizedFileGroupList}</div>
       <LightingControlPanel
         keyLightIntensity={ambientIntensity}
         setKeyLightIntensity={setAmbientIntensity}
@@ -206,8 +248,8 @@ const ControlPanel = ({
         setFillLightIntensity={setPointIntensity}
         handleResetCamera={handleResetCamera}
         handleCapture={handleCapture}
-        backgroundColor={backgroundColor} // backgroundColor 전달
-        setBackgroundColor={setBackgroundColor} // setBackgroundColor 전달
+        backgroundColor={backgroundColor}
+        setBackgroundColor={setBackgroundColor}
       />
     </div>
   );

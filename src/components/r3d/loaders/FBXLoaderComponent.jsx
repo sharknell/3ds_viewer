@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { useThree, useLoader } from "@react-three/fiber";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useThree } from "@react-three/fiber";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { TextureLoader, Box3, Vector3 } from "three";
 import { Html } from "@react-three/drei";
 import "./FBXLoaderComponent.css";
 
-const FBXLoaderComponent = ({ url, textures }) => {
-  const { camera } = useThree();
+const useModelLoader = (url, textures) => {
   const [fbx, setFbx] = useState(null);
   const [loadedTextures, setLoadedTextures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const loadModel = useCallback(() => {
     const loader = new FBXLoader();
     loader.load(
       url,
@@ -30,30 +29,18 @@ const FBXLoaderComponent = ({ url, textures }) => {
     );
   }, [url]);
 
-  useEffect(() => {
+  const loadTextures = useCallback(() => {
     if (textures && textures.length > 0) {
       const textureLoader = new TextureLoader();
-      const texturesPromises = textures.map((textureObj) => {
-        return new Promise((resolve, reject) => {
-          textureLoader.load(
-            textureObj.url,
-            (texture) => {
-              texture.name = textureObj.name.split(".")[0];
-              resolve(texture);
-            },
-            undefined,
-            (err) => {
-              console.error("Error loading texture:", err);
-              reject(err);
-            }
-          );
-        });
-      });
+      const texturesPromises = textures.map((textureObj) =>
+        textureLoader.loadAsync(textureObj.url).then((texture) => {
+          texture.name = textureObj.name.split(".")[0];
+          return texture;
+        })
+      );
 
       Promise.all(texturesPromises)
-        .then((textures) => {
-          setLoadedTextures(textures);
-        })
+        .then(setLoadedTextures)
         .catch((err) => {
           console.error("Error processing textures:", err);
           setError(err);
@@ -62,7 +49,19 @@ const FBXLoaderComponent = ({ url, textures }) => {
   }, [textures]);
 
   useEffect(() => {
-    if (fbx) {
+    loadModel();
+    loadTextures();
+  }, [loadModel, loadTextures]);
+
+  return { fbx, loadedTextures, loading, error };
+};
+
+const FBXLoaderComponent = ({ url, textures }) => {
+  const { camera } = useThree();
+  const { fbx, loadedTextures, loading, error } = useModelLoader(url, textures);
+
+  useEffect(() => {
+    if (fbx && loadedTextures.length > 0) {
       fbx.traverse((child) => {
         if (child.isMesh) {
           const texture = loadedTextures.find(
@@ -75,21 +74,17 @@ const FBXLoaderComponent = ({ url, textures }) => {
         }
       });
 
-      // Compute the bounding box of the model
       const box = new Box3().setFromObject(fbx);
       const size = box.getSize(new Vector3());
       const center = box.getCenter(new Vector3());
 
-      // Calculate the scale to fit the model within the desired size
       const maxDimension = Math.max(size.x, size.y, size.z);
       const scale = 1 / maxDimension;
       fbx.scale.set(scale, scale, scale);
 
-      // Center the object
       fbx.position.sub(center);
       fbx.position.y = size.y / 2;
 
-      // Adjust the camera to fit the scaled model
       const distance = Math.max(size.x, size.y, size.z) * 2;
       camera.position.set(0, distance, distance);
       camera.lookAt(center);
@@ -97,32 +92,36 @@ const FBXLoaderComponent = ({ url, textures }) => {
     }
   }, [fbx, loadedTextures, camera]);
 
-  if (loading) {
-    return (
-      <Html center>
-        <div className="loader">Loading...</div>
-      </Html>
-    );
-  }
+  const content = useMemo(() => {
+    if (loading) {
+      return (
+        <Html center>
+          <div className="loader">Loading...</div>
+        </Html>
+      );
+    }
 
-  if (error) {
-    return (
-      <Html center>
-        <div className="error-container">
-          <div className="error-icon">❌</div>
-          <div className="error-message">
-            Error loading model or textures: {error.message}
+    if (error) {
+      return (
+        <Html center>
+          <div className="error-container">
+            <div className="error-icon">❌</div>
+            <div className="error-message">
+              Error loading model or textures: {error.message}
+            </div>
           </div>
-        </div>
-      </Html>
-    );
-  }
+        </Html>
+      );
+    }
 
-  if (!fbx) {
-    return null;
-  }
+    if (!fbx) {
+      return null;
+    }
 
-  return <primitive object={fbx} scale={0.01} />;
+    return <primitive object={fbx} scale={0.01} />;
+  }, [loading, error, fbx]);
+
+  return content;
 };
 
 export default FBXLoaderComponent;

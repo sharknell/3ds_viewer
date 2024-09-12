@@ -1,4 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
+import PropTypes from "prop-types";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { Box3, Vector3 } from "three";
@@ -13,6 +20,24 @@ import GLBLoaderComponent from "./loaders/GLBLoaderComponent";
 import ControlPanel from "./ControlPanel";
 import Preview from "./Preview";
 import "./ModelViewer.css";
+
+const ACCEPTED_FILE_TYPES = [
+  "fbx",
+  "stl",
+  "ply",
+  "obj",
+  "3ds",
+  "dae",
+  "pcd",
+  "glb",
+];
+const ACCEPTED_TEXTURE_TYPES = ["jpg", "jpeg", "png", "tif", "bmp"];
+const CAMERA_SETTINGS = {
+  position: [0, 10, 40],
+  fov: 39.5978,
+  near: 0.1,
+  far: 3000,
+};
 
 const ModelLoader = ({ modelUrl, fileType, textures, mtlUrl, onModelLoad }) => {
   const LoaderComponent = {
@@ -36,6 +61,14 @@ const ModelLoader = ({ modelUrl, fileType, textures, mtlUrl, onModelLoad }) => {
   ) : null;
 };
 
+ModelLoader.propTypes = {
+  modelUrl: PropTypes.string,
+  fileType: PropTypes.string,
+  textures: PropTypes.array,
+  mtlUrl: PropTypes.string,
+  onModelLoad: PropTypes.func,
+};
+
 const CameraController = ({ onModelLoad }) => {
   const { camera } = useThree();
   const controlsRef = useRef();
@@ -46,7 +79,12 @@ const CameraController = ({ onModelLoad }) => {
 
   return <OrbitControls ref={controlsRef} />;
 };
-const ModelViewer = () => {
+
+CameraController.propTypes = {
+  onModelLoad: PropTypes.func.isRequired,
+};
+
+const useModelViewer = () => {
   const [modelUrl, setModelUrl] = useState(null);
   const [textures, setTextures] = useState([]);
   const [mtlUrl, setMtlUrl] = useState(null);
@@ -63,49 +101,45 @@ const ModelViewer = () => {
   const canvasRef = useRef();
 
   const handleFiles = useCallback((files) => {
-    const fileHandlers = {
-      fbx: FBXLoaderComponent,
-      stl: STLLoaderComponent,
-      ply: PLYLoaderComponent,
-      obj: OBJLoaderComponent,
-      "3ds": TDSLoaderComponent,
-      dae: DAELoaderComponent,
-      pcd: PCDLoaderComponent,
-      glb: GLBLoaderComponent,
-    };
+    try {
+      const fileType = ACCEPTED_FILE_TYPES.find((type) =>
+        files.some((file) => file.name.toLowerCase().endsWith(type))
+      );
 
-    const fileType = Object.keys(fileHandlers).find((type) =>
-      files.some((file) => file.name.toLowerCase().endsWith(type))
-    );
+      if (!fileType) {
+        throw new Error("Unsupported file type");
+      }
 
-    if (!fileType) return;
+      const modelFile = files.find((file) =>
+        file.name.toLowerCase().endsWith(fileType)
+      );
+      const textureFiles = files.filter((file) =>
+        ACCEPTED_TEXTURE_TYPES.includes(
+          file.name.split(".").pop().toLowerCase()
+        )
+      );
+      const mtlFile = files.find((file) =>
+        file.name.toLowerCase().endsWith(".mtl")
+      );
 
-    const modelFile = files.find((file) =>
-      file.name.toLowerCase().endsWith(fileType)
-    );
-    const textureFiles = files.filter((file) =>
-      ["jpg", "jpeg", "png", "tif", "bmp"].includes(
-        file.name.split(".").pop().toLowerCase()
-      )
-    );
-    const mtlFile = files.find((file) =>
-      file.name.toLowerCase().endsWith(".mtl")
-    );
-
-    setModelUrl(URL.createObjectURL(modelFile));
-    setModelFileName(modelFile.name);
-    setTextures(
-      textureFiles.map((file) => ({
-        name: file.name,
-        url: URL.createObjectURL(file),
-      }))
-    );
-    setMtlUrl(mtlFile ? URL.createObjectURL(mtlFile) : null);
-    setFileType(fileType);
+      setModelUrl(URL.createObjectURL(modelFile));
+      setModelFileName(modelFile.name);
+      setTextures(
+        textureFiles.map((file) => ({
+          name: file.name,
+          url: URL.createObjectURL(file),
+        }))
+      );
+      setMtlUrl(mtlFile ? URL.createObjectURL(mtlFile) : null);
+      setFileType(fileType);
+    } catch (error) {
+      console.error("Error handling files:", error);
+      // TODO: Display error message to user
+    }
   }, []);
+
   useEffect(() => {
     return () => {
-      // Clean up URLs when component unmounts
       [modelUrl, mtlUrl, ...textures.map((t) => t.url)].forEach((url) => {
         if (url) URL.revokeObjectURL(url);
       });
@@ -133,7 +167,6 @@ const ModelViewer = () => {
 
       requestAnimationFrame(() => {
         const dataURL = canvas.toDataURL("image/jpg");
-
         setCapturedImage(dataURL);
 
         const link = document.createElement("a");
@@ -159,13 +192,80 @@ const ModelViewer = () => {
         const fov = camera.fov * (Math.PI / 180);
         let cameraZ = Math.abs((maxDim / 4) * Math.tan(fov * 2));
 
-        cameraZ *= 1.5; // Optionally apply an additional factor to zoom out a little
+        cameraZ *= 1.5;
         camera.position.set(center.x, center.y, cameraZ);
         camera.lookAt(center);
         controlsRef.current.target.set(center.x, center.y, center.z);
       }
     };
   }, []);
+
+  return {
+    modelUrl,
+    textures,
+    mtlUrl,
+    fileType,
+    ambientIntensity,
+    pointIntensity,
+    spotIntensity,
+    spotAngle,
+    capturedImage,
+    modelFileName,
+    backgroundColor,
+    controlsRef,
+    canvasRef,
+    handleFiles,
+    handleFileUpload,
+    handleDrop,
+    handleResetCamera,
+    handleCapture,
+    handleModelLoad,
+    setAmbientIntensity,
+    setPointIntensity,
+    setSpotIntensity,
+    setBackgroundColor,
+  };
+};
+
+const ModelViewer = () => {
+  const {
+    modelUrl,
+    textures,
+    mtlUrl,
+    fileType,
+    ambientIntensity,
+    pointIntensity,
+    spotIntensity,
+    spotAngle,
+    capturedImage,
+    backgroundColor,
+    controlsRef,
+    canvasRef,
+    handleFiles,
+    handleFileUpload,
+    handleDrop,
+    handleResetCamera,
+    handleCapture,
+    handleModelLoad,
+    setAmbientIntensity,
+    setPointIntensity,
+    setSpotIntensity,
+    setBackgroundColor,
+  } = useModelViewer();
+
+  const memoizedModelLoader = useMemo(
+    () => (
+      <ModelLoader
+        modelUrl={modelUrl}
+        fileType={fileType}
+        textures={textures}
+        mtlUrl={mtlUrl}
+        onModelLoad={handleModelLoad}
+      />
+    ),
+    [modelUrl, fileType, textures, mtlUrl, handleModelLoad]
+  );
+
   return (
     <div className="model-viewer-container">
       <div className="control-panel">
@@ -191,12 +291,7 @@ const ModelViewer = () => {
           className="model-canvas"
           ref={canvasRef}
           style={{ background: backgroundColor }}
-          camera={{
-            position: [0, 10, 40],
-            fov: 39.5978,
-            near: 0.1,
-            far: 3000,
-          }}
+          camera={CAMERA_SETTINGS}
         >
           <ambientLight intensity={ambientIntensity} />
           <pointLight position={[1, 1, 1]} intensity={pointIntensity} />
@@ -222,13 +317,7 @@ const ModelViewer = () => {
           />
           <Environment preset="sunset" />
           <CameraController onModelLoad={handleModelLoad} />
-          <ModelLoader
-            modelUrl={modelUrl}
-            fileType={fileType}
-            textures={textures}
-            mtlUrl={mtlUrl}
-            onModelLoad={handleModelLoad}
-          />
+          {memoizedModelLoader}
         </Canvas>
       </div>
       <div className="preview-container">
@@ -237,4 +326,5 @@ const ModelViewer = () => {
     </div>
   );
 };
+
 export default ModelViewer;
