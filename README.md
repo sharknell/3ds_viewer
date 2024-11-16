@@ -4,7 +4,6 @@
         <img src="https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" alt="React" class="badge" />
         <img src="https://img.shields.io/badge/netlify-%23000000.svg?style=for-the-badge&logo=netlify&logoColor=#00C7B7" alt="Netlify" class="badge" />
         <p>이 프로젝트는 웹에서 3D 파일을 간편하게 업로드하고, 시각화하며, 캡처할 수 있는 기능을 제공합니다.</p>
-이 프로젝트는 웹에서 3D 파일을 간편하게 업로드하고, 시각화하며, 캡처할 수 있는 기능을 제공합니다.
 <h2> 3D 파일 확장자 </h1> 
 <p>DAE / FBX (잔버그가 많음) /GLB / OBJ / PCD / PLY /STL /TDS </ p>
 
